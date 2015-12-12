@@ -1,20 +1,14 @@
 <?php
 
-/*
-    This file content a random ideas and suggestions of the process that i should follow to release
-    the `Simplex` program.
-
-    $input = 'objective function and it's constraints';
-
-    for example :
-    max z = x1 + x2
-    2x1 + 3x2 <= 50
-    x1 + x2 <= 20
-
-    Simplex::run($input);
+/**
+ * Class Simplex
  */
 class Simplex
 {
+    /**
+     * @const the pattern of the constraint
+     */
+    const CONSTRAINT_PATTERN = '/^(((\+|-)?\s?[1-9]*x[1-9]+)\s?)+(<=|=|>=)\s?-?[0-9]+\s?;$/';
     /**
      * @const the pattern of the canonical form
      */
@@ -38,11 +32,13 @@ class Simplex
 
 
     /**
-    * Constructor
-    * @param {String} $input content of the objective function and it's constraints.
-    */
-    public function __construct(){
-
+     * Constructor
+     *
+     * @param string, optional $input content of the objective function and it's constraints.
+     */
+    public function __construct($input = null){
+        if($input)
+            $this->input = $this->stringReset($input);
     }
 
     /**
@@ -70,10 +66,40 @@ class Simplex
      * @param {string} $input
      * @return boolean
      */
-    public function isObjectiveFunction($input)
+    public function isObjectiveFunction()
     {
-        return preg_match(Simplex::OBJECTIVE_FUNCTION_PATTERN, $input);
+        return preg_match(Simplex::OBJECTIVE_FUNCTION_PATTERN, $this->input);
     }
 
+    /**
+     * Check if the input given is a constraint
+     *
+     * @param {string} $input
+     * @return boolean
+     */
+    public function isConstraint()
+    {
+        return preg_match(Simplex::CONSTRAINT_PATTERN, $this->input);
+    }
+    /**
+     * Reset the input given by removing the spaces and tabs
+     *
+     * @param {string} $input
+     * @return string
+     */
+    public function stringReset($input)
+    {
+        return strtolower(preg_replace('/\s+/', ' ', trim($input)));
+    }
+
+    /**
+     * Set the input
+     *
+     * @param $input
+     */
+    public function setInput($input)
+    {
+        $this->input = $this->stringReset($input);
+    }
 }
 
