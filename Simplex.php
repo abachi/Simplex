@@ -44,20 +44,10 @@ class Simplex
     /**
     * The main function of the script
     *
-    * @param {String} $input content of the objective function and the constraints.
+    * 
     */
     public function run()
     {
-        if(!$this->isObjectiveFunction($this->input))
-        {
-            // throw an exception content the error line and column
-        }
-
-            // now i must to organize the work by spliting the $input to array
-            $lexics = [
-                'obj_fun' => 'max z = x1 + x2',
-                'const_'+$this->constraints_number => ''
-		];
     }
 
     /**
@@ -68,7 +58,7 @@ class Simplex
      */
     public function isObjectiveFunction()
     {
-        return preg_match(Simplex::OBJECTIVE_FUNCTION_PATTERN, $this->input);
+        return (Boolean) preg_match(Simplex::OBJECTIVE_FUNCTION_PATTERN, $this->input);
     }
 
     /**
@@ -79,19 +69,9 @@ class Simplex
      */
     public function isConstraint()
     {
-        return preg_match(Simplex::CONSTRAINT_PATTERN, $this->input);
+        return (Boolean) preg_match(Simplex::CONSTRAINT_PATTERN, $this->input);
     }
-    /**
-     * Reset the input given by removing the spaces and tabs
-     *
-     * @param {string} $input
-     * @return string
-     */
-    public function stringReset($input)
-    {
-        return strtolower(preg_replace('/\s+/', ' ', trim($input)));
-    }
-
+    
     /**
      * Set the input
      *
