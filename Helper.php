@@ -4,32 +4,24 @@
 */
 class Helper {
 
-	const EQUATION_FIRST_PART = '//'; 
+    /**
+     * Get the content of file text
+     *
+     * @param {string} $path
+     * @return string
+     */
+    public static function getContent($path)
+    {
+        if(!is_file($path))
+            throw new Exception('Invalid path');
 
-	/**
-	* Check if the given string is matchthe equation form
-	*
-	* @param string 
-	* @return boolean
-	*/
-	public static function isEquation($equation)
-	{
-		return preg_match(EQUATION_FIRST_PART, Helper::stringReset($equation));
-	}
-
-	/**
-  	* Get the of numbers (coefficients) of an equation given
-  	* 	
-  	* @param string $equation i.e `5x1 + 2x2`
-  	* @return array 
-	*/
-	public static function getCoefficients($equation)
-	{
-		$equation = Helper::stringReset($equation);
-
-		return preg_match('//', $equation);
-
-	}
+        $result = file_get_contents($path);
+        if(is_string($result) === false)
+        {
+             throw new Exception('Invalid content');        
+        }
+        return Helper::stringReset($result);
+    }
 
 	/**
      * Reset the input given by removing the spaces and tabs
@@ -39,7 +31,32 @@ class Helper {
      */
     public static function stringReset($input)
     {
-        return strtolower(preg_replace('/\s+/', '', trim($input)));
+    	$pattren = '/(\s+|\t+)/';
+        return strtolower(preg_replace($pattren, ' ', trim($input)));
     }
+    /**
+     * Get the objective function from a text text given
+     *
+     * @param {string} $text
+     * @return string
+     */
+    public static function getObjectiveFunction($text)
+    {
+       
+    }
+
+    /**
+     * Get the optimisation action of an objective function given
+     *
+     * @param {string} $obj_function
+     * @return string
+     */
+    public static function getOptimisationAction($obj_function)
+    {
+        preg_match('/(max|min)/', Helper::stringReset($obj_function), $opt);
+        return $opt[0];
+    }
+
+
 
 }
