@@ -31,18 +31,46 @@ class Helper {
      */
     public static function stringReset($input)
     {
-    	$pattren = '/(\s+|\t+)/';
-        return strtolower(preg_replace($pattren, ' ', trim($input)));
+        $pattren = "/\r\n/";
+        $result = preg_replace($pattren, ';', $input);
+        $pattren = "/(\s+|\t+)/";
+        $result = preg_replace($pattren, ' ', trim($result));
+        return strtolower($result);
     }
+
     /**
-     * Get the objective function from a text text given
+     * Get the objective function string
      *
      * @param {string} $text
      * @return string
      */
     public static function getObjectiveFunction($text)
     {
-       
+       $text = Helper::stringReset($text); // lines chars are replaced by `;`
+       $lines = explode(';', $text);
+       return $lines[0];
+    }
+
+    /**
+     * Get the coefficients of an objective function
+     *
+     * @param {string} $text
+     * @return array
+     */
+    public static function getObjectiveFunctionCoeffs($text)
+    {
+       $obj_function = Helper::getObjectiveFunction($text);
+        $str_coeffs = explode(' ', preg_replace('/(min|max)/', '', $obj_function));
+        $coeffs = array();
+        foreach($str_coeffs as $key => $value){
+            $coeff = is_numeric(trim($value));
+            if(!$coeff){
+                continue;
+            }else{
+                $coeffs[] = floatval($value);
+            }
+        }
+        return $coeffs; 
     }
 
     /**
