@@ -39,7 +39,7 @@ class Helper {
     }
 
     /**
-     * Get the objective function string
+     * Get the objective function as string
      *
      * @param {string} $text
      * @return string
@@ -84,7 +84,43 @@ class Helper {
         preg_match('/(max|min)/', Helper::stringReset($obj_function), $opt);
         return $opt[0];
     }
+     /**
+     * Remove the elements that not useful (like value of an element is "\n")
+     *
+     * @param Array $array
+     * @return Array
+     */
+    public static function arrayCleaner($array)
+    {
+        $special_chars = array("/\n/", "/\r/", "/\t/", "/\r\n/");
+        $clean = array();
+        foreach ($array as $key => $value) {
+            $str = preg_replace($special_chars, '', $value);
+            if(strlen($str) > 0 && $str !== ' '){
+                $clean[] = $str;
+            }
+        }
+        return $clean;
+    }
 
+    /**
+     * Get the constraints matrix (coefficients of the constraints)
+     *
+     * @param {string} $text
+     * @return array
+     */
+    public static function getConstraintsMatrix($text)
+    {
+        $constraints = explode(';', $text);
+        $constraints = array_splice($constraints, 1); // delete the objective function
+        $constraints = Helper::arrayCleaner($constraints);
+        $result = array();
+        foreach ($constraints as $key => $constraint) {
+            $temp_arr = explode(' ', $constraint);
+            $result [] = Helper::arrayCleaner($temp_arr);
+        }
+       return $result;
+    }
 
 
 }
