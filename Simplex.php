@@ -94,21 +94,67 @@ class Simplex
    */
    public function standardize()
    {
-   		$constraints = $this->constraints;
-   		$new = array(); 
-   		foreach($constraints as $constraint){
-   			$equal_pos = sizeof($constraint) - 2;
-   			if($constraint[$equal_pos] === '<='){
-   				// for Base value
-   				$B = array_pop($constraint); 
-   				// delete the '<=' and add a positive quantity to make it an equation
-   				$constraint[sizeof($constraint) - 1] = '1';  
-   				$constraint[] = '=';
-   				$constraint[] = $B;
+   		$obj_func_vars_number 		  = sizeof($this->obj_function);
+		$constraints_must_standardize = array();
+
+	   	// replace the coefficients of the missing variables with 0
+		$constraints =  $this->replaceMissingConstraints($this->getConstraints(), $obj_func_vars_number);
+		foreach ($constraints as $key => $constraint) {
+			if(array_search('<=', $constraint) !== false){
+				$constraints_must_standardize[$key] = $constraint;
+			}
+		}
+		
+		$total_vars_number = sizeof($constraints_must_standardize) + $obj_func_vars_number;
+		$result = $this->replaceMissingConstraints($constraints_must_standardize, $total_vars_number);
+		$result = $this->addPositiveQuantity($result, $obj_func_vars_number);
+		$this->setConstraints($result);
+   }
+
+   /**
+   * Add positive quantity to the constraints to make the constraint an equation
+   *
+   * @param array $constraints
+   * @param integer $start, the offset for starting adding the positive quantity
+   * @return array
+   */
+   public function addPositiveQuantity($constraints, $start)
+   {
+   			$all_constraints = sizeof($constraints);
+   			$one_constraint = sizeof($constraints[0]);
+   			for ($i=0; $i < $all_constraints; $i++) { 
+   				$constraints[$i][$start] = '1';
+   				$constraints[$i][$one_constraint-2] = '=';
+   				$start++;
    			}
-   			$new[] = $constraint;
+   			return $constraints;
+   }
+
+   /**
+   * Replace the missign variables in each constraint by 0 as a coefficient
+   *
+   * @param array $constraints
+   * @param integer $vars_number, the number of variable must be in each equation
+   * @return array
+   */
+   public function replaceMissingConstraints($constraints, $vars_number)
+   {
+   		$temp = array();
+   		$result = array();
+   		foreach ($constraints as $key => $constraint) {
+   			$temp[0] = array_pop($constraint);
+   			$temp[1] = array_pop($constraint);
+   			$len = sizeof($constraint);
+   			if( $len <= $vars_number ){
+   				for ($i=$len - 1 ; $i < $vars_number-1; $i++) { 
+   					$constraint[] = '0';
+   				}
+   				$constraint[] = $temp[1];
+   				$constraint[] = $temp[0];
+   			}
+   			$result[] = $constraint;
    		}
-   		$this->setConstraints($new);
+   		return $result;
    }
 }
 
