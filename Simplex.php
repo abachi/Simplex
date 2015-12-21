@@ -7,33 +7,24 @@ class Simplex
 {
 
 	/**
-	* pattern to check if the constrants are sdandarized
-	* @constant 
-	*/
-	 const STANDARD_PATTREN = '//';
-
-	/**
 	* objective function coefficients
 	* @var array
 	*/
 	private $obj_function;
+
 	/**
 	* constraints coefficients
 	* @var array
 	*/
 	private $constraints;
+
 	/**
 	* optimization action `MAXIMISATION` OR `MINIMISATION`
 	* @var string
 	*/
 	private $opt_action;
-	/**
-	* standars form
-	* @var array
-	*/
-	private $standard_form;
 
-	public function __construct($obj_function, $constraints, $opt_action = 'max')
+	public function __construct($obj_function, $constraints, $opt_action)
 	{
 		$this->obj_function = $obj_function;	
 		$this->constraints = $constraints;	
@@ -55,5 +46,33 @@ class Simplex
    		return true;
    }
 
+   /**
+   * Return the constraints array
+   *
+   * @return array
+   */
+   public function getConstraints()
+   {
+   		return $this->constraints;
+   }
+
+   /**
+   * Return the objective function coefficients
+   *
+   * @return array
+   */
+   public function getObjectiveFunction()
+   {
+   		return $this->obj_function;
+   }
+   /**
+   * Return the optimization action
+   *
+   * @return string
+   */
+   public function getOptimisationAction()
+   {
+   		return $this->opt_action;
+   }
 }
 
