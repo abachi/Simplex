@@ -41,7 +41,7 @@ class Simplex
    		foreach( $this->constraints as $constraint){
    			$equal_pos = sizeof($constraint) - 2;
   			if($constraint[$equal_pos] !== '=')
-  					return false;
+  				return false;
    		}
    		return true;
    }
@@ -57,6 +57,17 @@ class Simplex
    }
 
    /**
+   * Set the constraints array
+   *
+   * @return void
+   */
+   public function setConstraints($constraints)
+   {
+   		$this->constraints = $constraints;
+   }
+
+
+   /**
    * Return the objective function coefficients
    *
    * @return array
@@ -65,14 +76,39 @@ class Simplex
    {
    		return $this->obj_function;
    }
+
    /**
    * Return the optimization action
    *
    * @return string
    */
-   public function getOptimisationAction()
+   public function getOptimizationAction()
    {
    		return $this->opt_action;
+   }
+
+   /**
+   * Transform the constraints from the canonical form to standard form
+   *
+   * @return void
+   */
+   public function standardize()
+   {
+   		$constraints = $this->constraints;
+   		$new = array(); 
+   		foreach($constraints as $constraint){
+   			$equal_pos = sizeof($constraint) - 2;
+   			if($constraint[$equal_pos] === '<='){
+   				// for Base value
+   				$B = array_pop($constraint); 
+   				// delete the '<=' and add a positive quantity to make it an equation
+   				$constraint[sizeof($constraint) - 1] = '1';  
+   				$constraint[] = '=';
+   				$constraint[] = $B;
+   			}
+   			$new[] = $constraint;
+   		}
+   		$this->setConstraints($new);
    }
 }
 
