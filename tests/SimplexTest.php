@@ -77,13 +77,19 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 	{
 		$simplex = self::getInstance('examples/example_table.txt');
 		$simplex->standardize();
-		$simplex->initTable();
+		$simplex->initTableOfCalculus();
+		$simplex->calculus();
 		$table = $simplex->getTableOfCalculus();
 		$execepted = array(
 			'vars_coeffs' => array(2, 4, 0, 0, 0),
 			'vars_names' => array('X1', 'X2', 'X3', 'X4', 'X5'),
 			'base_vars_names'  => array('X3', 'X4', 'X5'),
 			'base_vars_coeffs'  => array(0, 0, 0),
+			'constraints_coeffs' => array(
+				array(1, 1, 1, 0, 0),
+				array(2, 3, 0, 1, 0),
+				array(1, 3, 0, 0, 1)
+			),
 			'bases'  	 => array(100, 240, 210),
 			'thetas' 	 => array(100, 80, 70),
 			'zj' 		 => array(0, 0, 0, 0, 0),
