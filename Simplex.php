@@ -88,21 +88,35 @@ class Simplex
    */
    public function calculus()
    {
-         // start calculus
-         $this->setZj($this->caclulateZj());
-         $cj_zj = $this->caclulateCjMinusZj();
-         $this->setCjMinusZj($cj_zj);
 
-         //verifier the optimality 
-         //$this->isOptimal();
+      $this->setZj($this->caclulateZj());
+      $cj_zj = $this->caclulateCjMinusZj();
+      $this->setCjMinusZj($cj_zj);
+      /*
+       1:  zj 
+         cj zj 
+         verify the optimality
+         if not opt then
+            get the varIn and varOut and pivot
+            calculate the new constraints coeffs
+            got to 1 
+         endif
+         else
+         return the solution
+
+      */
+      // start calculus
+
+      //verifier the optimality 
+      //$this->isOptimal();
 
       // variable entrante
-      $varIn = $this->getVariableIn($cj_zj);
-       $varOut = $this->getVariableOut($varIn);
-       // var_dump($varOut);
-       // var_dump($varIn);
-       if($varOut === false)
-            throw exception('No variable want to out');
+      $varIn = $this->variableIn($cj_zj);
+      $varOut = $this->variableOut($varIn);
+      // var_dump($varOut);
+      // var_dump($varIn);
+      if($varOut === false)
+         throw exception('No variable want to out');
    }   
 
   /**
@@ -195,7 +209,7 @@ class Simplex
        $constraints = $this->getConstraints();
        $constraints_size = sizeof($constraints);
        $constraint_size = sizeof($constraints[0]);
-        for ($i=0; $i < $constraints_size ; $i++) { 
+       for ($i=0; $i < $constraints_size ; $i++) { 
              $bases [] = $constraints[$i][$constraint_size-1];
        }
        $this->setConstraintsBases($bases);
@@ -220,7 +234,7 @@ class Simplex
    * @param array $varIn
    * @return string
    */
-   public function getVariableOut($varIn)
+   public function variableOut($varIn)
    {
          $pos = array_search($varIn, $this->getConstraints());
          $Ai = $this->getConstraintsColumn($pos+1);
@@ -243,6 +257,21 @@ class Simplex
          $pos = array_search($positives[0], $thetas);
          return $table['base_vars_names'][$pos] ;
    } 
+
+   /**
+   * Get the pivot
+   *
+   * @param string $varIn
+   * @param string $varOut
+   * @return integer
+   */
+   public function pivot($varIn, $varOut)
+   {
+      $constraints = $this->getConstraintsCoeffs();
+      $i = intval(array_search($varOut, $this->getBaseVariablesNames()));
+      $j = intval(rtrim($varIn, 'X'));
+      return  $constraints[$i][$j+1];
+   }
 
    /**
    * Check if the table is optimal
@@ -275,7 +304,7 @@ class Simplex
    * @param array $cj_$zj
    * @return string
    */
-   public function getVariableIn($cj_zj)
+   public function variableIn($cj_zj)
    {
       $opt_action = $this->getOptimizationAction();
       // max((cj - zj) > 0)
@@ -798,4 +827,3 @@ class Simplex
    		return $result;
    }
 }
-

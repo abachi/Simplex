@@ -97,4 +97,17 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 		);
 		$this->assertTrue($table == $execepted);
 	}
+
+	/**
+	* @testdox it should return the pivot
+	* @test
+	*/
+	public function it_should_return_the_pivot()
+	{
+		$simplex = self::getInstance('examples/example_table.txt');
+		$simplex->standardize();
+		$simplex->initTableOfCalculus();
+		$pivot = $simplex->pivot('X2', 'X5');
+		$this->assertEquals(3, $pivot);
+	}
 }
