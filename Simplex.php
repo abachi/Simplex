@@ -122,13 +122,13 @@ class Simplex
          $this->setCjMinusZj($cj_zj);
 
          // verifier the optimality 
-         var_dump($this->isOptimal());
+         //$this->isOptimal();
 
       // variable entrante
       $varIn = $this->getVariableIn($cj_zj);
        $varOut = $this->getVariableOut($varIn);
-       var_dump($varOut);
-       var_dump($varIn);
+       // var_dump($varOut);
+       // var_dump($varIn);
        if($varOut === false)
             throw exception('No variable want to out');
 
@@ -174,7 +174,6 @@ class Simplex
             return fales; // to indicate no variable want to out 
 
          sort($positives);
-         var_dump($positives);
          $pos = array_search($positives[0], $thetas);
          return $table['base_vars_names'][$pos] ;
    } 

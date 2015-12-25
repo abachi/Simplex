@@ -45,12 +45,12 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 		$simplex->standardize();
 		$this->assertTrue($simplex->isStandardized());
 		$standard = array(
-		    array('3',  '4', '1', '0', '0', '0', '=', '4200'),
-		    array('1',  '3', '0', '1', '0', '0', '=', '2250'),
-		    array('1',  '2', '0', '0', '1', '0', '=', '2600'),
-		    array('2',  '0', '0', '0', '0', '1', '=', '1100')
+		    array(3,  4, 1, 0, 0, 0, '=', 4200),
+		    array(1,  3, 0, 1, 0, 0, '=', 2250),
+		    array(1,  2, 0, 0, 1, 0, '=', 2600),
+		    array(2,  0, 0, 0, 0, 1, '=', 1100)
 		);
-		$this->assertTrue($simplex->getConstraints() === $standard);
+		$this->assertTrue($simplex->getConstraints() == $standard);
 	}
 	/**
 	* @testdox it should replace the missign variables by zero as a coefficient
@@ -61,11 +61,34 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 		$simplex = self::getInstance('examples/example_complete_constraints.txt');
 		$result = $simplex->replaceMissingConstraints($simplex->getConstraints(), 3);
 		$test =  array(
-		    array('3',  '0', '0','<=', '4200'),
-		    array('1',  '3', '0','<=', '2250'),
-		    array('1',  '0', '0','<=', '2600'),
-		    array('2',  '0', '0','<=', '1100')
+		    array(3,  0, 0,'<=', 4200),
+		    array(1,  3, 0,'<=', 2250),
+		    array(1,  0, 0,'<=', 2600),
+		    array(2,  0, 0,'<=', 1100)
 		);
-		$this->assertTrue($test === $result);
+		$this->assertTrue($test == $result);
+	}
+
+	/**
+	* @testdox it should return the table_of_calculs
+	* @test
+	*/
+	public function it_should_return_the_table_of_calculs()
+	{
+		$simplex = self::getInstance('examples/example_table.txt');
+		$simplex->standardize();
+		$simplex->initTable();
+		$table = $simplex->getTableOfCalculus();
+		$execepted = array(
+			'vars_coeffs' => array(2, 4, 0, 0, 0),
+			'vars_names' => array('X1', 'X2', 'X3', 'X4', 'X5'),
+			'base_vars_names'  => array('X3', 'X4', 'X5'),
+			'base_vars_coeffs'  => array(0, 0, 0),
+			'bases'  	 => array(100, 240, 210),
+			'thetas' 	 => array(100, 80, 70),
+			'zj' 		 => array(0, 0, 0, 0, 0),
+			'cj-zj' 		 => array(2, 4, 0, 0, 0)
+		);
+		$this->assertTrue($table == $execepted);
 	}
 }
