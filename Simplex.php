@@ -7,19 +7,19 @@ class Simplex
 {
 
 	/**
-	* objective function coefficients
+	* Objective function coefficients
 	* @var array
 	*/
 	private $obj_function;
 
 	/**
-	* constraints coefficients
+	* Constraints coefficients
 	* @var array
 	*/
 	private $constraints;
 
 	/**
-	* optimization action `MAXIMISATION` OR `MINIMISATION`
+	* Optimization action `max` OR `min`
 	* @var string
 	*/
 	private $opt_action;
@@ -37,17 +37,13 @@ class Simplex
    private $total_vars_number;
 
    /**
-   * coefficients of the base variables
-   * @var array
+   * Initialize the object
+   *
+   * @param array $obj_function
+   * @param array $constraints
+   * @param string 'max' | 'min'
+   * @return void
    */
-   private $base_vars_coeffs;
-
-   /**
-   * The names of the variables in the base
-   * @var array
-   */
-   private $base_variables_names;
-
 	public function __construct($obj_function, $constraints, $opt_action)
 	{
 		$this->obj_function = $obj_function;	
@@ -71,57 +67,33 @@ class Simplex
    }
 
    /**
-   * initialize the table of calculus (the first iteration of the calculus)
+   * Initialize the table of calculus
    *
    * @return void
    */
-   public function initTable()
+   public function initTableOfCalculus()
    {  
-         // set all coeffs
-         $obj_func_coeffs = $this->getObjectiveFunction();
-         foreach($obj_func_coeffs as $c){
-            $all_coeffs[] = $c;
-         }   
-         $n = $this->getTotalVarsNumber();
-         for ($i=sizeof($obj_func_coeffs); $i < $n ; $i++) { 
-               $all_coeffs[] = 0;
-         }
-          $this->setVariablesCoeffs($all_coeffs);
+         $this->initVariablesCoeffs();
+         $this->initVariablesNames();
+         $this->initBaseVariablesNames();
+         $this->initBaseVariablesCoeffs();
+         $this->initConstraintsCoeffs();
+         $this->initConstraintsBases();       
+   }  
 
-         // set names of vars
-         for ($i=1; $i < $n+1; $i++) { 
-            $vars_names[] = 'X'.$i; 
-         }
-         $this->setVariablesNames($vars_names);
-          
-          // initialization of base variables
-         for ($i=sizeof($obj_func_coeffs); $i < $n ; $i++) { 
-               $base_vars_names [] = $this->getVariableNameByIndex($i);
-         }
-         $this->setBaseVariablesNames($base_vars_names);
-
-          // initialization of base coefficients
-       for ($i=sizeof($obj_func_coeffs); $i < $n ; $i++) { 
-             $base_vars_coeffs [] = $this->getVariableCoeffByIndex($i);
-       }
-       $this->setBaseVariablesCoeffs($base_vars_coeffs);
-
-          // initialization of constraints bases
-       $constraints = $this->getConstraints();
-       $constraints_size = sizeof($constraints);
-       $constraint_size = sizeof($constraints[0]);
-        for ($i=0; $i < $constraints_size ; $i++) { 
-             $bases [] = $constraints[$i][$constraint_size-1];
-       }
-       $this->setConstraintsBases($bases);
-
-         // calculation of zj 
+   /**
+   * Start calculus
+   *
+   * @return void
+   */
+   public function calculus()
+   {
+         // start calculus
          $this->setZj($this->caclulateZj());
-         // calculation of cj - zj 
          $cj_zj = $this->caclulateCjMinusZj();
          $this->setCjMinusZj($cj_zj);
 
-         // verifier the optimality 
+         //verifier the optimality 
          //$this->isOptimal();
 
       // variable entrante
@@ -131,14 +103,108 @@ class Simplex
        // var_dump($varIn);
        if($varOut === false)
             throw exception('No variable want to out');
+   }   
 
-         
-   }  
-   
+  /**
+  * Initialization of the variables coefficients
+  *
+  * @return void
+  */
+  private function initVariablesCoeffs()
+  {
+      $obj_func_coeffs = $this->getObjectiveFunction();
+      $n   = $this->getTotalVarsNumber();
+      $len = sizeof($obj_func_coeffs);
+
+      foreach($obj_func_coeffs as $c){
+         $all_coeffs[] = $c;
+      }   
+      for ($i=$len; $i < $n ; $i++) { 
+            $all_coeffs[] = 0;
+      }
+       $this->setVariablesCoeffs($all_coeffs);
+  }
+
+  /**
+  * Initialization of the variables names
+  *
+  * @return void
+  */
+  private function initVariablesNames()
+  {
+      $n   = $this->getTotalVarsNumber();
+      for ($i=1; $i < $n+1; $i++) { 
+         $vars_names[] = 'X'.$i; 
+      }
+      $this->setVariablesNames($vars_names);
+  } 
+
+  /**
+  * Initialization of the base variables names
+  *
+  * @return void
+  */
+  private function initBaseVariablesNames()
+  {
+      $n   = $this->getTotalVarsNumber();
+      $len = sizeof($this->getObjectiveFunction());
+      for ($i=$len; $i < $n ; $i++) { 
+            $base_vars_names [] = $this->getVariableNameByIndex($i);
+      }
+      $this->setBaseVariablesNames($base_vars_names);
+  } 
+
+  /**
+  * Initialization of the base variables coefficients
+  *
+  * @return void
+  */
+  private function initBaseVariablesCoeffs()
+  {
+      $n   = $this->getTotalVarsNumber();
+      $len = sizeof($this->getObjectiveFunction());
+     for ($i=$len; $i < $n ; $i++) { 
+           $base_vars_coeffs [] = $this->getVariableCoeffByIndex($i);
+     }
+     $this->setBaseVariablesCoeffs($base_vars_coeffs);
+  } 
+
+  /**
+  * Initialization of constraints coefficients
+  *
+  * @return void
+  */
+  private function initConstraintsCoeffs()
+  {
+      $constraints = $this->getConstraints();
+      foreach ($constraints as $constraint) {
+            array_pop($constraint); // delete the base 
+            array_pop($constraint); // delete the '=' symbol
+            $coeffs[] = $constraint;
+         }   
+      $this->setConstraintsCoeffs($coeffs);
+  } 
+
+  /**
+  * Initialization of constraints bases
+  *
+  * @return void
+  */
+  private function initConstraintsBases()
+  {
+       $constraints = $this->getConstraints();
+       $constraints_size = sizeof($constraints);
+       $constraint_size = sizeof($constraints[0]);
+        for ($i=0; $i < $constraints_size ; $i++) { 
+             $bases [] = $constraints[$i][$constraint_size-1];
+       }
+       $this->setConstraintsBases($bases);
+  } 
+
    /**
    * Calculate theta
    *
-   * @return float | string 'infinite'
+   * @return float | string
    */
    private function CalculateTheta($b, $a)
    {
@@ -146,9 +212,10 @@ class Simplex
             return $b/$a;
 
          return 'infinite';
-   }   
+   }  
+
    /**
-   * determine witch variable must go out of the base
+   * Determine witch variable must go out of the base
    *
    * @param array $varIn
    * @return string
@@ -156,7 +223,7 @@ class Simplex
    public function getVariableOut($varIn)
    {
          $pos = array_search($varIn, $this->getConstraints());
-         $Ai = $this->getConstraintsColumns($pos+1);
+         $Ai = $this->getConstraintsColumn($pos+1);
          $bases = $this->getConstraintsBases();
          $table = $this->getTableOfCalculus();
          $len = sizeof($bases);
@@ -168,10 +235,9 @@ class Simplex
                $positives[] = $t;
             }
          }
-         // var_dump($positives);
          $this->setThetas($thetas);
          if(sizeof($positives) < 1)
-            return fales; // to indicate no variable want to out 
+            return fales; // to indicate no variable want to go out 
 
          sort($positives);
          $pos = array_search($positives[0], $thetas);
@@ -202,10 +268,11 @@ class Simplex
       }
       return true;
    }
+
    /**
-   * determine witch variable must go in of the base
+   * Determine witch variable must go in of the base
    *
-   * @param array $cj-$zj
+   * @param array $cj_$zj
    * @return string
    */
    public function getVariableIn($cj_zj)
@@ -223,8 +290,9 @@ class Simplex
       }
      return $this->getVariableNameByIndex(array_search($value, $cj_zj));
    }
+
    /**
-   * Return an array of Cj - Zj
+   * Calculate Cj - Zj
    *
    * @return array
    */
@@ -239,6 +307,7 @@ class Simplex
          }
          return $cj_zj;
    }
+
    /**
    * Get an array of Cj - Zj
    *
@@ -248,10 +317,11 @@ class Simplex
    {
       return  $this->table['cj-zj'];
    }
+
    /**
    * Set an array of Cj - Zj
    *
-   * @return array
+   * @return void
    */
    public function setCjMinusZj($cjzj)
    {
@@ -259,7 +329,27 @@ class Simplex
    }
 
    /**
-   * Return an array of Zj
+   * Get constraints coefficients
+   *
+   * @return array
+   */
+   public function getConstraintsCoeffs()
+   {
+      return  $this->table['constraints_coeffs'];
+   }
+
+   /**
+   * Set constraints coefficients
+   *
+   * @return void
+   */
+   public function setConstraintsCoeffs($coeffs)
+   {
+      $this->table['constraints_coeffs'] = $coeffs;
+   }
+
+   /**
+   * Calculate Zj
    *
    * @return array
    */
@@ -268,7 +358,7 @@ class Simplex
        $cvb = $this->getBaseVariablesCoeffs();
        $constraints = $this->getConstraints();
        $consts = sizeof($cvb);
-       $coeffs = sizeof($constraints[0]) - 2; // 1 2 3 4 = 10 
+       $coeffs = sizeof($constraints[0]) - 2;
 
       for ($i=0; $i < $coeffs ; $i++) { 
           $sum = 0;
@@ -278,8 +368,8 @@ class Simplex
          $zj[] = $sum;
       }
        return $zj;
-
    }
+
    /**
    * Set Zj
    *
@@ -303,7 +393,7 @@ class Simplex
    /**
    * Get the constraints array
    *
-   * @return array of strings
+   * @return array
    */
    public function getConstraints()
    {
@@ -311,12 +401,12 @@ class Simplex
    }
 
    /**
-   * Set the constraints
+   * Get a constraints column by index $j
    * 
-   * @param array of strings $constraints
-   * @return void
+   * @param integer $j
+   * @return array
    */
-   public function getConstraintsColumns($j)
+   public function getConstraintsColumn($j)
    {  
          $constraints = $this->getConstraints();
          $len = sizeof($constraints);
@@ -325,10 +415,11 @@ class Simplex
          }
          return $result;
    }
+
    /**
    * Set the constraints
-   * getConstraintColumns
-   * @param array of strings $constraints
+   * 
+   * @param array $constraints
    * @return void
    */
    public function setConstraints($constraints)
@@ -347,8 +438,9 @@ class Simplex
    }
 
    /**
-   * Set the thetas array
+   * Set the thetas
    *
+   * @param array $thetas
    * @return void
    */
    public function setThetas($thetas)
@@ -375,6 +467,7 @@ class Simplex
    {
    		return $this->opt_action;
    }
+
    /**
    * Get the table of calculus
    *
@@ -397,36 +490,45 @@ class Simplex
    }
 
    /**
-   * Get the objective function coefficients
+   * Get a variable name by index in the table['vars_names']
    *
-   * @return array
+   * @param integer $index
+   * @return string
    */
    public function getVariableNameByIndex($index)
    {
          return $this->table['vars_names'][$index];
    }
+
    /**
-   * Get the objective function coefficients
+   * Set a variable name by index in the table['vars_names']
    *
-   * @return array
-   */
-   public function getVariableCoeffByIndex($index)
-   {
-         return $this->table['vars_coeffs'][$index];
-   }
-   /**
-   * Get the objective function coefficients
-   *
-   * @return array
+   * @param string  $name
+   * @param integer $index
+   * @return void
    */
    public function setVariableNameByIndex($name, $index)
    {
           $this->table['vars_names'][$i] = $name;
    }
+
    /**
-   * set the objective function coefficients
+   * Get a variable coefficient by index in the table['vars_coeffs']
    *
-   * @return array
+   * @param integer $index
+   * @return integer
+   */
+   public function getVariableCoeffByIndex($index)
+   {
+         return $this->table['vars_coeffs'][$index];
+   }
+
+   /**
+   * Set a variable coefficient by index in the table['vars_coeffs']
+   *
+   * @param integer  $coeff
+   * @param integer $index
+   * @return void
    */
    public function setVariableCoeffByIndex($coeff, $index)
    {
@@ -434,31 +536,32 @@ class Simplex
    }
 
    /**
-   * Get the constraint base
+   * Get the constraint base by index
    *
    * @param integer $index
    * @return integer
    */
-   public function getConstraintBase($index)
+   public function getConstraintBaseByIndex($index)
    {
          return $this->table['bases'][$index];
    }
 
    /**
-   * Set the constraint base
+   * Set the constraint base by index
    *
+   * @param integer $base
+   * @param integer $index
    * @return void
    */
-   public function setConstraintBase($base, $index)
+   public function setConstraintBaseByIndex($base, $index)
    {
           $this->table['bases'][$index] = $base;
    }
 
    /**
-   * Get the constraint base
+   * Get all the constraints bases
    *
-   * @param integer $index
-   * @return integer
+   * @return array
    */
    public function getConstraintsBases()
    {
@@ -468,6 +571,7 @@ class Simplex
    /**
    * Set the constraints bases
    *
+   * @param array $bases
    * @return void
    */
    public function setConstraintsBases($bases)
@@ -496,6 +600,29 @@ class Simplex
    }
 
    /**
+   * Set the name of variable in the base by index
+   *
+   * @param string $name
+   * @param integer $index
+   * @return void
+   */
+   public function setBaseVariableNameByIndex($name, $index)
+   {
+         $this->table['base_vars_names'][$index] = $name;
+   }
+
+   /**
+   * Get the name of variable in the base by index
+   *
+   * @param integer $index
+   * @return string
+   */
+   public function getBaseVariableNameByIndex($index)
+   {
+         return $this->table['base_vars_names'][$index];
+   }
+
+   /**
    * Get the coefficients of the base variables from the table
    *
    * @return array
@@ -514,8 +641,33 @@ class Simplex
    {
          $this->table['base_vars_coeffs'] = $coeffs;
    }
+
    /**
-   * Get the coefficients of the base variables from the table
+   * Set the coefficient of the base variable by index
+   *
+   * @param integer $coeff
+   * @param integer $index
+   * @return void
+   */
+   public function setBaseVariableCoeffByIndex($coeff, $index)
+   {
+         $this->table['base_vars_coeffs'][$index] = $coeff;
+   }
+
+   /**
+   * Get the coefficient of the base variable by index
+   *
+   * @param integer $coeff
+   * @param integer $index
+   * @return void
+   */
+   public function getBaseVariableCoeffByIndex($index)
+   {
+         return $this->table['base_vars_coeffs'][$index];
+   }
+
+   /**
+   * Get the coefficients of the base variables
    *
    * @return array
    */
@@ -527,6 +679,7 @@ class Simplex
    /**
    * Set the coefficients of the base variables
    *
+   * @param array $coeffs
    * @return void
    */
    public function setVariablesCoeffs($coeffs)
@@ -547,6 +700,7 @@ class Simplex
    /**
    * Set the variables names
    *
+   * @param array ²$names
    * @return void
    */
    public function setVariablesNames($names)
@@ -574,6 +728,7 @@ class Simplex
    {
       return $this->total_vars_number;
    }
+
    /**
    * Transform the constraints from the canonical form to standard form
    *
@@ -591,7 +746,6 @@ class Simplex
 				$constraints_must_standardize[$key] = $constraint;
 			}
 		}
-		
 		$this->setTotalVarsNumber(sizeof($constraints_must_standardize) + $obj_func_vars_number );
 		$result = $this->replaceMissingConstraints($constraints_must_standardize, $this->getTotalVarsNumber());
 		$result = $this->addPositiveQuantity($result, $obj_func_vars_number);
@@ -602,7 +756,7 @@ class Simplex
    * Add positive quantity to the constraints to make the constraint an equation
    *
    * @param array $constraints
-   * @param integer $start, the offset for starting adding the positive quantity
+   * @param integer $start, the position for starting adding the positive quantity
    * @return array
    */
    public function addPositiveQuantity($constraints, $start)
@@ -610,7 +764,7 @@ class Simplex
    			$all_constraints = sizeof($constraints);
    			$one_constraint = sizeof($constraints[0]);
    			for ($i=0; $i < $all_constraints; $i++) { 
-   				$constraints[$i][$start] = '1';
+   				$constraints[$i][$start] = 1;
    				$constraints[$i][$one_constraint-2] = '=';
    				$start++;
    			}
