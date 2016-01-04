@@ -88,10 +88,6 @@ class Simplex
    */
    public function calculus()
    {
-
-      $this->setZj($this->caclulateZj());
-      $cj_zj = $this->caclulateCjMinusZj();
-      $this->setCjMinusZj($cj_zj);
       /*
        1:  zj 
          cj zj 
@@ -105,18 +101,19 @@ class Simplex
          return the solution
 
       */
+
       // start calculus
 
-      //verifier the optimality 
-      //$this->isOptimal();
-
-      // variable entrante
-      $varIn = $this->variableIn($cj_zj);
-      $varOut = $this->variableOut($varIn);
-      // var_dump($varOut);
-      // var_dump($varIn);
-      if($varOut === false)
-         throw exception('No variable want to out');
+      //verifier the optimality
+      while(!$this->isOptimal()){
+         $this->setZj($this->caclulateZj());
+         $cj_zj = $this->caclulateCjMinusZj();
+         $this->setCjMinusZj($cj_zj);
+         $varIn  = $this->variableIn($cj_zj);
+         $varOut = $this->variableOut($varIn);
+         $pivot  = $this->pivot($varIn, $varOut);
+         $this->setConstraintsCoeffs($this->calculateNextTable($varIn, $varOut, $pivot));
+      }
    }   
 
   /**
@@ -137,6 +134,52 @@ class Simplex
             $all_coeffs[] = 0;
       }
        $this->setVariablesCoeffs($all_coeffs);
+  }
+
+  /**
+  * Calculate the new constraints coefficients
+  *
+  * @param string $varIn
+  * @param string $varOut
+  * @param integer $pivot
+  * @return array
+  */
+  public function calculateNextTable($varIn, $varOut, $pivot)
+  {
+      $current_table = $this->getTableOfCalculus();
+      $pivot_i = array_search($varOut, $current_table['base_vars_names']);
+      $pivot_j = array_search($varIn, $current_table['vars_names']);
+      $coeff = $this->getVariableCoeffByName($varIn);
+      $this->setBaseVariableNameByIndex($varIn, $pivot_i);
+      $this->setBaseVariableCoeffByIndex($coeff, $pivot_i);
+      $constraints = $this->getConstraintsCoeffs();
+      $len_all = sizeof($constraints);
+      $len_one = sizeof($constraints[0]);
+
+      // pivot line
+      for ($i=0; $i < $len_one; $i++) { 
+            $result[$pivot_i][$i] = round($constraints[$pivot_i][$i] / $pivot, 2); 
+      }
+      for($i=0; $i < $len_all; $i++) {
+         for ($j=0; $j < $len_one; $j++) { 
+            if($i !== $pivot_i)
+               $result[$i][$j] = round(($constraints[$pivot_i][$j] * (-$constraints[$i][$pivot_j]/$pivot)) + $constraints[$i][$j], 2); 
+         }
+      }
+      return $result;
+  }
+
+  /**
+  * Get the coefficient of the variable
+  * 
+  * @param string $name
+  * @return integer
+  */
+  public function getVariableCoeffByName($name)
+  {
+      $var_names = $this->getVariablesNames();
+      $pos = array_search($name, $var_names);
+      return $this->getVariableCoeffByIndex($pos);
   }
 
   /**
@@ -385,9 +428,9 @@ class Simplex
    public function caclulateZj()
    {
        $cvb = $this->getBaseVariablesCoeffs();
-       $constraints = $this->getConstraints();
+       $constraints = $this->getConstraintsCoeffs();
        $consts = sizeof($cvb);
-       $coeffs = sizeof($constraints[0]) - 2;
+       $coeffs = sizeof($constraints[0]);
 
       for ($i=0; $i < $coeffs ; $i++) { 
           $sum = 0;
