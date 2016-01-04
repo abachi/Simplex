@@ -88,23 +88,6 @@ class Simplex
    */
    public function calculus()
    {
-      /*
-       1:  zj 
-         cj zj 
-         verify the optimality
-         if not opt then
-            get the varIn and varOut and pivot
-            calculate the new constraints coeffs
-            got to 1 
-         endif
-         else
-         return the solution
-
-      */
-
-      // start calculus
-
-      //verifier the optimality
       while(!$this->isOptimal()){
          $this->setZj($this->caclulateZj());
          $cj_zj = $this->caclulateCjMinusZj();
