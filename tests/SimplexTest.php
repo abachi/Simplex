@@ -78,9 +78,9 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 		$simplex = self::getInstance('examples/example_table.txt');
 		$simplex->standardize();
 		$simplex->initTableOfCalculus();
-		$simplex->calculus();
-		$table = $simplex->getTableOfCalculus();
-		$execepted = array(
+		$pivot = $simplex->pivot('X2', 'X5');
+		$table = $simplex->calculateNextTable('X2', 'X5', $pivot);
+		$excepted = array(
 			'vars_coeffs' => array(2, 4, 0, 0, 0),
 			'vars_names' => array('X1', 'X2', 'X3', 'X4', 'X5'),
 			'base_vars_names'  => array('X3', 'X4', 'X5'),
@@ -95,7 +95,7 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 			'zj' 		 => array(0, 0, 0, 0, 0),
 			'cj-zj' 		 => array(2, 4, 0, 0, 0)
 		);
-		$this->assertTrue($table == $execepted);
+		$this->assertTrue($table == $excepted);
 	}
 
 	/**
@@ -109,5 +109,23 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 		$simplex->initTableOfCalculus();
 		$pivot = $simplex->pivot('X2', 'X5');
 		$this->assertEquals(3, $pivot);
+	}
+
+	/**
+	* @testdox it should calculate the next table
+	* @test
+	*/
+	public function it_should_calculate_the_next_table()
+	{
+		$simplex = self::getInstance('examples/example_table.txt');
+		$simplex->standardize();
+		$simplex->initTableOfCalculus();
+		$table = $simplex->calculateNextTable('X2', 'X5', 3);
+		$excepted = array(
+				array(0.67, 0, 1, 0, -0.33),
+				array(1, 0, 0, 1, -1),
+				array(0.33, 1, 0, 0, 0.33)
+		);
+		$this->assertTrue($table == $excepted);
 	}
 }
