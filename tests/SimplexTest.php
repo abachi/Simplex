@@ -70,35 +70,6 @@ class SimplexTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	* @testdox it should return the table_of_calculs
-	* @test
-	*/
-	public function it_should_return_the_table_of_calculs()
-	{
-		$simplex = self::getInstance('examples/example_table.txt');
-		$simplex->standardize();
-		$simplex->initTableOfCalculus();
-		$pivot = $simplex->pivot('X2', 'X5');
-		$table = $simplex->calculateNextTable('X2', 'X5', $pivot);
-		$excepted = array(
-			'vars_coeffs' => array(2, 4, 0, 0, 0),
-			'vars_names' => array('X1', 'X2', 'X3', 'X4', 'X5'),
-			'base_vars_names'  => array('X3', 'X4', 'X5'),
-			'base_vars_coeffs'  => array(0, 0, 0),
-			'constraints_coeffs' => array(
-				array(1, 1, 1, 0, 0),
-				array(2, 3, 0, 1, 0),
-				array(1, 3, 0, 0, 1)
-			),
-			'bases'  	 => array(100, 240, 210),
-			'thetas' 	 => array(100, 80, 70),
-			'zj' 		 => array(0, 0, 0, 0, 0),
-			'cj-zj' 		 => array(2, 4, 0, 0, 0)
-		);
-		$this->assertTrue($table == $excepted);
-	}
-
-	/**
 	* @testdox it should return the pivot
 	* @test
 	*/
